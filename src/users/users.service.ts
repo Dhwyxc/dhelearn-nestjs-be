@@ -4,8 +4,9 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import mongoose, { Model } from 'mongoose';
-import { hashPasswordHelper } from '@/helpers/util';
+import { comparePasswordHelper, hashPasswordHelper } from '@/helpers/util';
 import aqp from 'api-query-params';
+import { ChangePasswordAuthDto, CreateAuthDto } from '@/auth/dto/create-auth.dto';
 
 @Injectable()
 export class UsersService {
@@ -29,11 +30,14 @@ export class UsersService {
     if (isExist === true) {
       throw new BadRequestException(`Email đã tồn tại: ${email}. Vui lòng sử dụng email khác.`)
     }
+
     //hash password
     const hashPassword = await hashPasswordHelper(createUserDto.password);
+    
     const user = await this.userModel.create({
       name, email, password: hashPassword, role, classCode, createdBy
     })
+
     return {
       _id: user._id
     }
@@ -93,6 +97,46 @@ async findAll(query: string, current: number, pageSize: number) {
       throw new BadRequestException("Id không đúng định dạng mongodb")
     }
 
+  }
+
+  async handleRegister(registerDto: CreateAuthDto) {
+    const { name, email, password, role } = registerDto;
+
+    //check email
+    const isExist = await this.isEmailExist(email);
+    if (isExist === true) {
+      throw new BadRequestException(`Email đã tồn tại: ${email}. Vui lòng sử dụng email khác.`)
+    }
+
+    //hash password
+    const hashPassword = await hashPasswordHelper(password);
+    const user = await this.userModel.create({
+      name, email, password: hashPassword, role
+    })
+
+    return {
+      _id: user._id
+    }
+  }
+
+  async changePassword({ email, oldPassword, password, confirmPassword }: ChangePasswordAuthDto) {
+    if (password !== confirmPassword)
+      throw new BadRequestException("Mật khẩu mới và xác nhận mật khẩu không khớp.");
+
+    const user = await this.userModel.findOne({ email });
+    if (!user)
+      throw new BadRequestException("Tài khoản không tồn tại.");
+
+    if (!(await comparePasswordHelper(oldPassword, user.password)))
+      throw new BadRequestException("Mật khẩu cũ không đúng.");
+
+    if (await comparePasswordHelper(password, user.password))
+      throw new BadRequestException("Mật khẩu mới phải khác mật khẩu cũ.");
+
+    user.password = await hashPasswordHelper(password);
+    await user.save();
+
+    return { message: "Đổi mật khẩu thành công." };
   }
 
 }

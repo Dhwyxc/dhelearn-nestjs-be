@@ -9,6 +9,9 @@ import { LessonsModule } from './lessons/lessons.module';
 import { ExamsModule } from './exams/exams.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ExamSubmissionsModule } from './exam-submissions/exam-submissions.module';
+import { AuthModule } from './auth/auth.module';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/passport/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -25,9 +28,20 @@ import { ExamSubmissionsModule } from './exam-submissions/exam-submissions.modul
     LessonsModule,
     ExamsModule,
     NotificationsModule,
-    ExamSubmissionsModule
+    ExamSubmissionsModule,
+    AuthModule
     ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: TransformInterceptor,
+    // }
+  ],
 })
 export class AppModule {}
