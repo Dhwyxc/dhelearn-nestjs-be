@@ -1,15 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Roles } from './roles.decorator';
+import { RoleGuard } from './role.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  @UseGuards(RoleGuard)
+  @Roles('admin', 'teacher')
+  create(@Body() createUserDto: CreateUserDto, @Req() req) {
+    // Set createdBy to current user id
+    const user = req.user;
+    return this.usersService.create({ ...createUserDto, createdBy: user?._id });
   }
 
   @Get()
