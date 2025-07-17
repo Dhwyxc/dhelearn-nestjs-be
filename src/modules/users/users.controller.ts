@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Re
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Roles } from './roles.decorator';
+import { Roles } from '../../decorator/roles.decorator';
 import { RoleGuard } from './role.guard';
 
 @Controller('users')
