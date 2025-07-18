@@ -12,6 +12,7 @@ import { ExamSubmissionsModule } from './modules/exam-submissions/exam-submissio
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/passport/jwt-auth.guard';
+import { TransformInterceptor } from './core/transform.interceptor';
 
 @Module({
   imports: [
@@ -38,10 +39,10 @@ import { JwtAuthGuard } from './auth/passport/jwt-auth.guard';
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
-    // {
-    //   provide: APP_INTERCEPTOR,
-    //   useClass: TransformInterceptor,
-    // }
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor,
+    }
   ],
 })
 export class AppModule {}
