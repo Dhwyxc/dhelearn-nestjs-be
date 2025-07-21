@@ -1,14 +1,7 @@
+import { PartialType } from "@nestjs/mapped-types";
 import { IsMongoId, IsNotEmpty, IsOptional } from "class-validator";
+import { CreateUserDto } from "./create-user.dto";
 
 
-export class UpdateUserDto {
-    @IsMongoId({ message: "_id không hợp lệ" })
-    @IsNotEmpty({ message: "_id không được để trống" })
-    _id: string;
-
-    @IsOptional()
-    name: string;
-
-    @IsOptional()
-    classCode: string;
+export class UpdateUserDto extends PartialType(CreateUserDto){
 }

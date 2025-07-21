@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Transform } from 'class-transformer';
+import { Document, SchemaTypes, Types } from 'mongoose';
 
 export type CourseDocument = Course & Document;
 
@@ -15,10 +16,13 @@ export class Course {
   imageUrl?: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  teacherId: Types.ObjectId;
+  createdBy: Types.ObjectId;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   studentIds: Types.ObjectId[];
+
+  @Prop({ enum: ['private', 'public'], default: 'public' })
+  tag: 'private' | 'public';
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);

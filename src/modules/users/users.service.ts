@@ -3,7 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 import { comparePasswordHelper, hashPasswordHelper } from '@/helpers/util';
 import aqp from 'api-query-params';
 import { ChangePasswordAuthDto, CreateAuthDto } from '@/auth/dto/create-auth.dto';
@@ -44,6 +44,7 @@ export class UsersService {
 
   }
 
+//Cần sửa lại với pagination ở base.service.ts
 async findAll(query: string, current: number, pageSize: number) {
     const { filter, sort } = aqp(query);
     if (filter.current) delete filter.current;
@@ -80,12 +81,13 @@ async findAll(query: string, current: number, pageSize: number) {
   }
 
   async findByEmail(email: string) {
-    return await this.userModel.findOne({ email })
+    return await this.userModel.findOne({ email }).select("-password");
   }
 
-  async update(updateUserDto: UpdateUserDto) {
-    return await this.userModel.updateOne(
-      { _id: updateUserDto._id }, { ...updateUserDto });
+  async update(id: string | Types.ObjectId, updateUserDto: UpdateUserDto) {
+    return await this.userModel.findByIdAndUpdate(id, updateUserDto, {
+      new: true,
+    }).select("-password");
   }
 
   async remove(_id: string) {

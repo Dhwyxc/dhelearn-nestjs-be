@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type UserDocument = User & Document;
 
@@ -20,8 +20,8 @@ export class User {
   @Prop() // mã lớp của học sinh
   classCode?: string;
 
-  @Prop() // ID người tạo (Admin hoặc GV)
-  createdBy?: string;
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  createdBy: Types.ObjectId;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

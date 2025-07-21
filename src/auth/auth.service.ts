@@ -41,4 +41,9 @@ export class AuthService {
     return await this.usersService.changePassword(data);
   }
 
+  getProfile = async (user: any) => {
+    if (!user) throw new UnauthorizedException('Unauthorized');
+    return await this.usersService.findByEmail(user.username);
+  }
+
 }

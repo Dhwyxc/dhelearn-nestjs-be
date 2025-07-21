@@ -31,4 +31,9 @@ export class AuthController {
     return this.authService.changePassword(data);
   }
 
+  @Get('profile')
+  getProfile(@Request() req) {
+    return this.authService.getProfile(req.user);
+  }
+
 }

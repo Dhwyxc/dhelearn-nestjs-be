@@ -10,8 +10,9 @@ async function bootstrap() {
   const port = config.get('PORT');
 
   app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
+    // whitelist: true,
     forbidNonWhitelisted: true,
+    transform:true
   }));
 
   app.setGlobalPrefix('api/v1', {exclude: ['']}); // Set global prefix for all routes

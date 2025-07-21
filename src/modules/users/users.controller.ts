@@ -3,7 +3,10 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from '../../decorator/roles.decorator';
-import { RoleGuard } from './role.guard';
+import { RoleGuard } from '../../guards/role.guard';
+import { UserId } from '@/decorator/user-id.decorator';
+import { Types } from 'mongoose';
+import { ParseObjectIdPipe } from '@/core/parse-id.pipe';
 
 @Controller('users')
 export class UsersController {
@@ -12,10 +15,8 @@ export class UsersController {
   @Post()
   @UseGuards(RoleGuard)
   @Roles('admin', 'teacher')
-  create(@Body() createUserDto: CreateUserDto, @Req() req) {
-    // Set createdBy to current user id
-    const user = req.user;
-    return this.usersService.create({ ...createUserDto, createdBy: user?._id });
+  create(@Body() createUserDto: CreateUserDto, @UserId() userId: Types.ObjectId ) {
+    return this.usersService.create({ ...createUserDto, createdBy: userId });
   }
 
   @Get()
@@ -32,9 +33,13 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
-  @Patch()
-  update(@Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(updateUserDto);
+  @UseGuards(RoleGuard)
+  @Roles('admin', 'teacher')
+  @Patch(':id')
+  update(
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+    @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
