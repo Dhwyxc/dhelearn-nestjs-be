@@ -53,6 +53,23 @@ export class CoursesController {
     });
   }
 
+  @UseGuards(RoleGuard)
+  @Roles('teacher')
+  @Get('manage')
+  findAllManage(
+    @Query('page') page = 1, 
+    @Query('limit') limit = 10, 
+    @Query('sort') sort = '-createdAt',
+    @UserId() userId: Types.ObjectId
+  ) {
+    return this.coursesService.paginate({
+      page: Number(page),
+      limit: Number(limit),
+      sort: convertSortStringToObject(sort),
+      filter: { createdBy: userId },
+    });
+  }
+
   @Get('public')
   findAllPublic(
     @Query('page') page = 1, 
@@ -71,7 +88,7 @@ export class CoursesController {
   @Roles('admin', 'teacher', 'student')
   @Get(':id')
   findOne(
-    @Param('id') id: string
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId
   ) {
     return this.coursesService.findById(id);
   }
@@ -102,7 +119,7 @@ export class CoursesController {
   @Roles('admin', 'teacher')
   @Delete(':id')
   remove(
-    @Param('id') id: string
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId
   ) {
     return this.coursesService.delete(id);
   }

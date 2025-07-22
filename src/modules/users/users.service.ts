@@ -5,7 +5,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import mongoose, { Model, Types } from 'mongoose';
 import { comparePasswordHelper, hashPasswordHelper } from '@/helpers/util';
-import aqp from 'api-query-params';
 import { ChangePasswordAuthDto, CreateAuthDto } from '@/auth/dto/create-auth.dto';
 import { BaseService, PaginationOptions } from '@/core/base.service';
 
@@ -50,7 +49,7 @@ export class UsersService extends BaseService<User> {
   }
 
   async findByEmail(email: string) {
-    return await this.userModel.findOne({ email }).select("-password");
+    return await this.userModel.findOne({ email });
   }
 
   async findById(id: string | Types.ObjectId) {

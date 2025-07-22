@@ -8,6 +8,7 @@ import { UserId } from '@/decorator/user-id.decorator';
 import { Types } from 'mongoose';
 import { ParseObjectIdPipe } from '@/core/parse-id.pipe';
 import { convertSortStringToObject } from '@/helpers/util';
+import { User } from './schemas/user.schema';
 
 @Controller('users')
 export class UsersController {
@@ -24,6 +25,8 @@ export class UsersController {
   }
 
   @Get()
+  @UseGuards(RoleGuard)
+  @Roles('admin')
   findAll(
     @Query('page') page = 1, 
     @Query('limit') limit = 10, 
@@ -36,16 +39,33 @@ export class UsersController {
     });
   }
 
+  @Get('manage')
+  @UseGuards(RoleGuard)
+  @Roles('teacher')
+  findAllManage(
+    @Query('page') page = 1, 
+    @Query('limit') limit = 10, 
+    @Query('sort') sort = '-createdAt',
+    @UserId() userId: Types.ObjectId
+  ) {
+    return this.usersService.paginate({
+      page: Number(page),
+      limit: Number(limit),
+      sort: convertSortStringToObject(sort),
+      filter: { createdBy: userId },
+    });
+  }
+
   @Get(':id')
   findOne(
-    @Param('id') id: string
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId
   ) {
     return this.usersService.findById(id);
   }
 
+  @Patch(':id')
   @UseGuards(RoleGuard)
   @Roles('admin', 'teacher')
-  @Patch(':id')
   update(
     @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
     @Body() updateUserDto: UpdateUserDto) {
@@ -53,8 +73,10 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @UseGuards(RoleGuard)
+  @Roles('admin', 'teacher')
   remove(
-    @Param('id') id: string
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId
   ) {
     return this.usersService.delete(id);
   }

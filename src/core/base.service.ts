@@ -1,4 +1,4 @@
-import { Model, FilterQuery ,Document} from 'mongoose';
+import { Model, FilterQuery ,Document, Types} from 'mongoose';
 import {
   BadRequestException,
   NotFoundException,
@@ -23,7 +23,7 @@ export class BaseService<T, S = T & Document> {
     return this.model.find(filter).exec();
   }
 
-  async findById(id: string){
+  async findById(id: string | Types.ObjectId){
     const item = await this.model.findById(id).exec();
     if (!item) throw new NotFoundException('Không tìm thấy bản ghi');
     return item;
@@ -43,7 +43,7 @@ export class BaseService<T, S = T & Document> {
     return updated;
   }
 
-  async delete(id: string){
+  async delete(id: string | Types.ObjectId){
     const deleted = await this.model.findByIdAndDelete(id).exec();
     if (!deleted) throw new NotFoundException('Không tìm thấy bản ghi');
     return deleted;
