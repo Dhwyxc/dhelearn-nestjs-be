@@ -8,6 +8,9 @@ export class RoleGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
+
+    console.log('User in RoleGuard:', user);
+    
     if (!user || !user.role) {
       throw new ForbiddenException('No user role found');
     }
@@ -23,7 +26,7 @@ export class RoleGuard implements CanActivate {
     // Kiểm tra đặc biệt cho việc tạo user
     console.log('Request URL:', request.url);
     if (request.url === '/api/v1/users' && request.method === 'POST') {
-      console.log("aaaa")
+      console.log("Create user guard")
       const {role: newUserRole} = request.body;
       if (user.role === 'admin') {
         if (newUserRole !== 'teacher' && newUserRole !== 'student') {

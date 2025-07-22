@@ -7,7 +7,7 @@ import {
 export interface PaginationOptions {
   page?: number;
   limit?: number;
-  sort?: string;
+  sort?: Record<string, 1 | -1>;
   filter?: FilterQuery<any>;
 }
 
@@ -69,7 +69,7 @@ async paginate(options: PaginationOptions): Promise<{
     {
       $facet: {
         data: [
-          // { $sort: sort },
+          { $sort: sort },
           { $skip: skip },
           { $limit: limit },
         ],

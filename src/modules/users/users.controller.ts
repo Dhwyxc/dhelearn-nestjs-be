@@ -7,6 +7,7 @@ import { RoleGuard } from '../../guards/role.guard';
 import { UserId } from '@/decorator/user-id.decorator';
 import { Types } from 'mongoose';
 import { ParseObjectIdPipe } from '@/core/parse-id.pipe';
+import { convertSortStringToObject } from '@/helpers/util';
 
 @Controller('users')
 export class UsersController {
@@ -20,17 +21,21 @@ export class UsersController {
   }
 
   @Get()
-  async findAll(
-    @Query() query: string,
-    @Query("current") current: string,
-    @Query("pageSize") pageSize: string,
+  findAll(
+    @Query('page') page = 1, 
+    @Query('limit') limit = 10, 
+    @Query('sort') sort = '-createdAt'
   ) {
-    return this.usersService.findAll(query, +current, +pageSize);
+    return this.usersService.paginate({
+      page: Number(page),
+      limit: Number(limit),
+      sort: convertSortStringToObject(sort),
+    });
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+    return this.usersService.findById(id);
   }
 
   @UseGuards(RoleGuard)
@@ -44,6 +49,6 @@ export class UsersController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+    return this.usersService.delete(id);
   }
 }

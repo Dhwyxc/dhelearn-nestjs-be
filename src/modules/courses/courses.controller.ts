@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
@@ -18,6 +19,7 @@ import { Roles } from '../../decorator/roles.decorator';
 import { ParseObjectIdPipe } from '@/core/parse-id.pipe';
 import { Types } from 'mongoose';
 import { UserId } from '@/decorator/user-id.decorator';
+import { convertSortStringToObject } from '@/helpers/util';
 
 @Controller('courses')
 export class CoursesController {
@@ -36,13 +38,30 @@ export class CoursesController {
   @UseGuards(RoleGuard)
   @Roles('admin', 'teacher')
   @Get()
-  findAll() {
-    return this.coursesService.findAll({});
+  findAll(
+    @Query('page') page = 1, 
+    @Query('limit') limit = 10, 
+    @Query('sort') sort = '-createdAt'
+  ) {
+    return this.coursesService.paginate({
+      page: Number(page),
+      limit: Number(limit),
+      sort: convertSortStringToObject(sort),
+    });
   }
 
   @Get('public')
-  findAllPublic() {
-    return this.coursesService.findAll({ tag: 'public' });
+  findAllPublic(
+    @Query('page') page = 1, 
+    @Query('limit') limit = 10, 
+    @Query('sort') sort = '-createdAt'
+  ) {
+    return this.coursesService.paginate({
+      page: Number(page),
+      limit: Number(limit),
+      sort: convertSortStringToObject(sort),
+      filter: { tag: 'public' },
+    });
   }
 
   @UseGuards(RoleGuard)

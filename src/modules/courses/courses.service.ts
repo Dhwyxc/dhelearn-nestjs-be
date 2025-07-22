@@ -8,7 +8,7 @@ import mongoose, { Model, Types } from 'mongoose';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { Course, CourseDocument } from './schemas/course.schema';
-import { BaseService } from '@/core/base/base.service';
+import { BaseService, PaginationOptions } from '@/core/base.service';
 
 @Injectable()
 export class CoursesService extends BaseService<Course> {
@@ -18,6 +18,10 @@ export class CoursesService extends BaseService<Course> {
   ) {
     super(courseModel);
   }
+
+async paginate(options: PaginationOptions) {
+  return super.paginate(options);
+}
 
 async update(id: string | Types.ObjectId, updateCourseDto: UpdateCourseDto) {
   if (!mongoose.isValidObjectId(id)) {

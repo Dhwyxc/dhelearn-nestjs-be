@@ -16,3 +16,18 @@ export const comparePasswordHelper = async (plainPassword: string, hashPassword:
         console.log(error)
     }
 }
+
+export function convertSortStringToObject(sort: string | string[]): Record<string, 1 | -1> {
+  const sortObj: Record<string, 1 | -1> = {};
+
+  if (Array.isArray(sort)) {
+    for (const key of sort) {
+      sortObj[key.replace('-', '')] = key.startsWith('-') ? -1 : 1;
+    }
+  } else {
+    const key = sort.replace('-', '');
+    sortObj[key] = sort.startsWith('-') ? -1 : 1;
+  }
+
+  return sortObj;
+}

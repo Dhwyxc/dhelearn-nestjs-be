@@ -2,19 +2,25 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from './schemas/user.schema';
+import { User, UserDocument } from './schemas/user.schema';
 import mongoose, { Model, Types } from 'mongoose';
 import { comparePasswordHelper, hashPasswordHelper } from '@/helpers/util';
 import aqp from 'api-query-params';
 import { ChangePasswordAuthDto, CreateAuthDto } from '@/auth/dto/create-auth.dto';
+import { BaseService, PaginationOptions } from '@/core/base.service';
 
 @Injectable()
-export class UsersService {
+export class UsersService extends BaseService<User> {
   constructor(
     @InjectModel(User.name)
-    private userModel: Model<User>
-  
-  ) {}
+    private userModel: Model<UserDocument>
+  ) {
+    super(userModel);
+  }
+
+  async paginate(options: PaginationOptions) {
+    return super.paginate(options);
+  }  
 
   isEmailExist = async (email: string) => {
     const user = await this.userModel.exists({ email });
@@ -38,67 +44,26 @@ export class UsersService {
       name, email, password: hashPassword, role, classCode, createdBy
     })
 
-    return {
-      _id: user._id
-    }
-
-  }
-
-//Cần sửa lại với pagination ở base.service.ts
-async findAll(query: string, current: number, pageSize: number) {
-    const { filter, sort } = aqp(query);
-    if (filter.current) delete filter.current;
-    if (filter.pageSize) delete filter.pageSize;
-
-    if (!current) current = 1;
-    if (!pageSize) pageSize = 10;
-
-    const totalItems = (await this.userModel.find(filter)).length;
-    const totalPages = Math.ceil(totalItems / pageSize);
-
-    const skip = (current - 1) * (pageSize);
-
-    const results = await this.userModel
-      .find(filter)
-      .limit(pageSize)
-      .skip(skip)
-      .select("-password")
-      .sort(sort as any);
-
-    return {
-      meta: {
-        current: current, //trang hiện tại
-        pageSize: pageSize, //số lượng bản ghi đã lấy
-        pages: totalPages,  //tổng số trang với điều kiện query
-        total: totalItems // tổng số phần tử (số bản ghi)
-      },
-      results //kết quả query
-    }
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+    user.password = undefined; // Remove password from response
+    
+    return user;
   }
 
   async findByEmail(email: string) {
     return await this.userModel.findOne({ email }).select("-password");
   }
 
+  async findById(id: string | Types.ObjectId) {
+    if (!mongoose.isValidObjectId(id)) {
+      throw new BadRequestException('Id không đúng định dạng mongodb');
+    }
+    return await this.userModel.findById(id).select("-password");
+  }
+
   async update(id: string | Types.ObjectId, updateUserDto: UpdateUserDto) {
     return await this.userModel.findByIdAndUpdate(id, updateUserDto, {
       new: true,
     }).select("-password");
-  }
-
-  async remove(_id: string) {
-    //check id
-    if (mongoose.isValidObjectId(_id)) {
-      //delete
-      return this.userModel.deleteOne({ _id })
-    } else {
-      throw new BadRequestException("Id không đúng định dạng mongodb")
-    }
-
   }
 
   async handleRegister(registerDto: CreateAuthDto) {
