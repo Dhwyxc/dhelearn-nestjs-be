@@ -28,7 +28,10 @@ export class CoursesController {
   @UseGuards(RoleGuard)
   @Roles('admin', 'teacher')
   @Post()
-  create(@Body() createCourseDto: CreateCourseDto, @UserId() userId: Types.ObjectId) {
+  create(
+    @Body() createCourseDto: CreateCourseDto, 
+    @UserId() userId: Types.ObjectId
+  ) {
     return this.coursesService.create({
       ...createCourseDto,
       createdBy: userId,
@@ -67,7 +70,9 @@ export class CoursesController {
   @UseGuards(RoleGuard)
   @Roles('admin', 'teacher', 'student')
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(
+    @Param('id') id: string
+  ) {
     return this.coursesService.findById(id);
   }
 
@@ -81,23 +86,24 @@ export class CoursesController {
     return this.coursesService.update(id, updateCourseDto);
   }
 
-@Patch(':id/public')
-updateStudents(
+  @Patch(':id/public')
+  updateStudents(
   @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
   @Body() updateCourseDto: UpdateCourseDto,
   @UserId() userId: Types.ObjectId,
-) {
+  ) {
   return this.coursesService.update(id, {
     ...updateCourseDto,
     studentIds: [userId],
   });
 }
 
-
   @UseGuards(RoleGuard)
   @Roles('admin', 'teacher')
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(
+    @Param('id') id: string
+  ) {
     return this.coursesService.delete(id);
   }
 }

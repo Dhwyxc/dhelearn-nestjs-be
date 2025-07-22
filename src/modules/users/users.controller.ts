@@ -16,7 +16,10 @@ export class UsersController {
   @Post()
   @UseGuards(RoleGuard)
   @Roles('admin', 'teacher')
-  create(@Body() createUserDto: CreateUserDto, @UserId() userId: Types.ObjectId ) {
+  create(
+    @Body() createUserDto: CreateUserDto, 
+    @UserId() userId: Types.ObjectId 
+  ) {
     return this.usersService.create({ ...createUserDto, createdBy: userId });
   }
 
@@ -34,7 +37,9 @@ export class UsersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(
+    @Param('id') id: string
+  ) {
     return this.usersService.findById(id);
   }
 
@@ -48,7 +53,9 @@ export class UsersController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(
+    @Param('id') id: string
+  ) {
     return this.usersService.delete(id);
   }
 }

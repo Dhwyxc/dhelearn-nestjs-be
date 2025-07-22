@@ -19,60 +19,60 @@ export class CoursesService extends BaseService<Course> {
     super(courseModel);
   }
 
-async paginate(options: PaginationOptions) {
-  return super.paginate(options);
-}
-
-async update(id: string | Types.ObjectId, updateCourseDto: UpdateCourseDto) {
-  if (!mongoose.isValidObjectId(id)) {
-    throw new BadRequestException('Id không đúng định dạng mongodb');
+  async paginate(options: PaginationOptions) {
+    return super.paginate(options);
   }
 
-  const course = await this.courseModel.findById(id);
-  if (!course) {
-    throw new NotFoundException('Course not found');
-  }
+  async update(id: string | Types.ObjectId, updateCourseDto: UpdateCourseDto) {
+    if (!mongoose.isValidObjectId(id)) {
+      throw new BadRequestException('Id không đúng định dạng mongodb');
+    }
 
-  const { action, studentIds } = updateCourseDto;
+    const course = await this.courseModel.findById(id);
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
 
-  let updateQuery: any = {};
+    const { action, studentIds } = updateCourseDto;
 
-  // Nếu có studentIds + action -> chỉ update studentIds
-  if (studentIds && Array.isArray(studentIds) && studentIds.length > 0 && action) {
-    if (action === 'add') {
-      updateQuery = {
-        $addToSet: {
-          studentIds: { $each: studentIds },
-        },
-      };
-    } else if (action === 'remove') {
-      updateQuery = {
-        $pull: {
-          studentIds: { $in: studentIds },
-        },
-      };
+    let updateQuery: any = {};
+
+    // Nếu có studentIds + action -> chỉ update studentIds
+    if (studentIds && Array.isArray(studentIds) && studentIds.length > 0 && action) {
+      if (action === 'add') {
+        updateQuery = {
+          $addToSet: {
+            studentIds: { $each: studentIds },
+          },
+        };
+      } else if (action === 'remove') {
+        updateQuery = {
+          $pull: {
+            studentIds: { $in: studentIds },
+          },
+        };
+      } else {
+        throw new BadRequestException(
+          'Hành động không hợp lệ. Chỉ chấp nhận "add" hoặc "remove".',
+        );
+      }
     } else {
-      throw new BadRequestException(
-        'Hành động không hợp lệ. Chỉ chấp nhận "add" hoặc "remove".',
-      );
-    }
-  } else {
-    // Nếu không có studentIds hoặc action -> update các trường còn lại
-    const { action: _a, studentIds: _s, ...otherFields } = updateCourseDto;
+      // Nếu không có studentIds hoặc action -> update các trường còn lại
+      const { action: _a, studentIds: _s, ...otherFields } = updateCourseDto;
 
-    if (Object.keys(otherFields).length === 0) {
-      throw new BadRequestException('Không có dữ liệu để cập nhật');
+      if (Object.keys(otherFields).length === 0) {
+        throw new BadRequestException('Không có dữ liệu để cập nhật');
+      }
+
+      updateQuery = { $set: otherFields };
     }
 
-    updateQuery = { $set: otherFields };
+    const updated = await this.courseModel.findByIdAndUpdate(id, updateQuery, {
+      new: true,
+    });
+
+    if (!updated) throw new NotFoundException('Course not found');
+    return updated;
   }
-
-  const updated = await this.courseModel.findByIdAndUpdate(id, updateQuery, {
-    new: true,
-  });
-
-  if (!updated) throw new NotFoundException('Course not found');
-  return updated;
-}
 
 }

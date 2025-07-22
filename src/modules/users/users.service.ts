@@ -61,9 +61,8 @@ export class UsersService extends BaseService<User> {
   }
 
   async update(id: string | Types.ObjectId, updateUserDto: UpdateUserDto) {
-    return await this.userModel.findByIdAndUpdate(id, updateUserDto, {
-      new: true,
-    }).select("-password");
+    const { name, classCode } = updateUserDto;
+    return await this.userModel.findByIdAndUpdate(id, { name, classCode }, { new: true }).select("-password");
   }
 
   async handleRegister(registerDto: CreateAuthDto) {
