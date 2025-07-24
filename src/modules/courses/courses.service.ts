@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -23,7 +24,20 @@ export class CoursesService extends BaseService<Course> {
     return super.paginate(options);
   }
 
-  async update(id: string | Types.ObjectId, updateCourseDto: UpdateCourseDto) {
+  async findCourseById(id: Types.ObjectId, user: any) {
+    const course = await this.courseModel.findById(id);
+
+    if (!course) throw new NotFoundException('Course not found');
+
+    // Nếu là student, kiểm tra quyền truy cập
+    if (user.role === 'student' && !course.studentIds.includes(user._id)) {
+      throw new ForbiddenException('Bạn không được phép truy cập khóa học này');
+    }
+
+    return course;
+  }
+
+  async update(id: Types.ObjectId, updateCourseDto: UpdateCourseDto) {
     if (!mongoose.isValidObjectId(id)) {
       throw new BadRequestException('Id không đúng định dạng mongodb');
     }
@@ -38,7 +52,12 @@ export class CoursesService extends BaseService<Course> {
     let updateQuery: any = {};
 
     // Nếu có studentIds + action -> chỉ update studentIds
-    if (studentIds && Array.isArray(studentIds) && studentIds.length > 0 && action) {
+    if (
+      studentIds &&
+      Array.isArray(studentIds) &&
+      studentIds.length > 0 &&
+      action
+    ) {
       if (action === 'add') {
         updateQuery = {
           $addToSet: {
@@ -74,5 +93,4 @@ export class CoursesService extends BaseService<Course> {
     if (!updated) throw new NotFoundException('Course not found');
     return updated;
   }
-
 }

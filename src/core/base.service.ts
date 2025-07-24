@@ -23,7 +23,7 @@ export class BaseService<T, S = T & Document> {
     return this.model.find(filter).exec();
   }
 
-  async findById(id: string | Types.ObjectId){
+  async findById(id: Types.ObjectId){
     const item = await this.model.findById(id).exec();
     if (!item) throw new NotFoundException('Không tìm thấy bản ghi');
     return item;
@@ -34,7 +34,7 @@ export class BaseService<T, S = T & Document> {
     return item;
   }
 
-  async update(id: string, updateDto: any){
+  async update(id: Types.ObjectId, updateDto: any){
     const updated = await this.model.findByIdAndUpdate(id, updateDto, {
       new: true,
     }).exec();
@@ -43,7 +43,7 @@ export class BaseService<T, S = T & Document> {
     return updated;
   }
 
-  async delete(id: string | Types.ObjectId){
+  async delete(id: Types.ObjectId){
     const deleted = await this.model.findByIdAndDelete(id).exec();
     if (!deleted) throw new NotFoundException('Không tìm thấy bản ghi');
     return deleted;

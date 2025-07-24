@@ -29,8 +29,8 @@ export class CoursesController {
   @Roles('admin', 'teacher')
   @Post()
   create(
-    @Body() createCourseDto: CreateCourseDto, 
-    @UserId() userId: Types.ObjectId
+    @Body() createCourseDto: CreateCourseDto,
+    @UserId() userId: Types.ObjectId,
   ) {
     return this.coursesService.create({
       ...createCourseDto,
@@ -42,9 +42,9 @@ export class CoursesController {
   @Roles('admin', 'teacher')
   @Get()
   findAll(
-    @Query('page') page = 1, 
-    @Query('limit') limit = 10, 
-    @Query('sort') sort = '-createdAt'
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('sort') sort = '-createdAt',
   ) {
     return this.coursesService.paginate({
       page: Number(page),
@@ -57,10 +57,10 @@ export class CoursesController {
   @Roles('teacher')
   @Get('manage')
   findAllManage(
-    @Query('page') page = 1, 
-    @Query('limit') limit = 10, 
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
     @Query('sort') sort = '-createdAt',
-    @UserId() userId: Types.ObjectId
+    @UserId() userId: Types.ObjectId,
   ) {
     return this.coursesService.paginate({
       page: Number(page),
@@ -70,11 +70,31 @@ export class CoursesController {
     });
   }
 
+  @UseGuards(RoleGuard)
+  @Roles('student')
+  @Get('joined')
+  findAllJoin(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('sort') sort = '-createdAt',
+    @UserId() userId: Types.ObjectId,
+  ) {
+    const filter: any = {};
+    filter.studentIds = userId; // lọc theo student đã đăng ký
+
+    return this.coursesService.paginate({
+      page: Number(page),
+      limit: Number(limit),
+      sort: convertSortStringToObject(sort),
+      filter,
+    });
+  }
+
   @Get('public')
   findAllPublic(
-    @Query('page') page = 1, 
-    @Query('limit') limit = 10, 
-    @Query('sort') sort = '-createdAt'
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('sort') sort = '-createdAt',
   ) {
     return this.coursesService.paginate({
       page: Number(page),
@@ -87,10 +107,9 @@ export class CoursesController {
   @UseGuards(RoleGuard)
   @Roles('admin', 'teacher', 'student')
   @Get(':id')
-  findOne(
-    @Param('id', ParseObjectIdPipe) id: Types.ObjectId
-  ) {
-    return this.coursesService.findById(id);
+  findOne(@Param('id', ParseObjectIdPipe) id: Types.ObjectId, @Req() req: any) {
+    const user = req.user;
+    return this.coursesService.findCourseById(id, user);
   }
 
   @UseGuards(RoleGuard)
@@ -105,22 +124,20 @@ export class CoursesController {
 
   @Patch(':id/public')
   updateStudents(
-  @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
-  @Body() updateCourseDto: UpdateCourseDto,
-  @UserId() userId: Types.ObjectId,
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+    @Body() updateCourseDto: UpdateCourseDto,
+    @UserId() userId: Types.ObjectId,
   ) {
-  return this.coursesService.update(id, {
-    ...updateCourseDto,
-    studentIds: [userId],
-  });
-}
+    return this.coursesService.update(id, {
+      ...updateCourseDto,
+      studentIds: [userId],
+    });
+  }
 
   @UseGuards(RoleGuard)
   @Roles('admin', 'teacher')
   @Delete(':id')
-  remove(
-    @Param('id', ParseObjectIdPipe) id: Types.ObjectId
-  ) {
+  remove(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
     return this.coursesService.delete(id);
   }
 }
