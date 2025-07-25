@@ -20,7 +20,9 @@ import { ParseObjectIdPipe } from '@/core/parse-id.pipe';
 import { Types } from 'mongoose';
 import { UserId } from '@/decorator/user-id.decorator';
 import { convertSortStringToObject } from '@/helpers/util';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Courses')
 @Controller('courses')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}

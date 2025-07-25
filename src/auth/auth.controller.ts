@@ -3,8 +3,9 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './passport/local-auth.guard';
 import { Public, ResponseMessage } from '@/decorator/customize';
 import { ChangePasswordAuthDto,  CreateAuthDto } from './dto/create-auth.dto';
+import { ApiTags } from '@nestjs/swagger';
 
-
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(

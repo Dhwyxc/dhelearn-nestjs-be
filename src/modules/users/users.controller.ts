@@ -8,8 +8,9 @@ import { UserId } from '@/decorator/user-id.decorator';
 import { Types } from 'mongoose';
 import { ParseObjectIdPipe } from '@/core/parse-id.pipe';
 import { convertSortStringToObject } from '@/helpers/util';
-import { User } from './schemas/user.schema';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

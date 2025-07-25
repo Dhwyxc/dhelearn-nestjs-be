@@ -2,7 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ExamSubmissionsService } from './exam-submissions.service';
 import { CreateExamSubmissionDto } from './dto/create-exam-submission.dto';
 import { UpdateExamSubmissionDto } from './dto/update-exam-submission.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Exam Submissions')
 @Controller('exam-submissions')
 export class ExamSubmissionsController {
   constructor(private readonly examSubmissionsService: ExamSubmissionsService) {}
