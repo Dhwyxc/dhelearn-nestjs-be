@@ -47,11 +47,15 @@ export class CoursesController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @Query('sort') sort = '-createdAt',
+    @Query('q') keyword?: string,
+    @Query('searchFields') searchFields?: string | string[],
   ) {
     return this.coursesService.paginate({
       page: Number(page),
       limit: Number(limit),
       sort: convertSortStringToObject(sort),
+      keyword,
+      searchFields: searchFields ?? ['title'],
     });
   }
 
@@ -63,12 +67,16 @@ export class CoursesController {
     @Query('limit') limit = 10,
     @Query('sort') sort = '-createdAt',
     @UserId() userId: Types.ObjectId,
+    @Query('q') keyword?: string,
+    @Query('searchFields') searchFields?: string | string[],
   ) {
     return this.coursesService.paginate({
       page: Number(page),
       limit: Number(limit),
       sort: convertSortStringToObject(sort),
       filter: { createdBy: userId },
+      keyword,
+      searchFields: searchFields ?? ['title'],
     });
   }
 
@@ -80,6 +88,8 @@ export class CoursesController {
     @Query('limit') limit = 10,
     @Query('sort') sort = '-createdAt',
     @UserId() userId: Types.ObjectId,
+    @Query('q') keyword?: string,
+    @Query('searchFields') searchFields?: string | string[],
   ) {
     const filter: any = {};
     filter.studentIds = userId; // lọc theo student đã đăng ký
@@ -89,6 +99,8 @@ export class CoursesController {
       limit: Number(limit),
       sort: convertSortStringToObject(sort),
       filter,
+      keyword,
+      searchFields: searchFields ?? ['title'],
     });
   }
 
@@ -97,12 +109,16 @@ export class CoursesController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @Query('sort') sort = '-createdAt',
+    @Query('q') keyword?: string,
+    @Query('searchFields') searchFields?: string | string[],
   ) {
     return this.coursesService.paginate({
       page: Number(page),
       limit: Number(limit),
       sort: convertSortStringToObject(sort),
       filter: { tag: 'public' },
+      keyword,
+      searchFields: searchFields ?? ['title'],
     });
   }
 

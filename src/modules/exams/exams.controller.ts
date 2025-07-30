@@ -46,11 +46,15 @@ export class ExamsController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @Query('sort') sort = '-createdAt',
+    @Query('q') keyword?: string,
+    @Query('searchFields') searchFields?: string | string[],
   ) {
     return this.examsService.paginate({
       page: Number(page),
       limit: Number(limit),
       sort: convertSortStringToObject(sort),
+      keyword,
+      searchFields: searchFields ?? ['title'],
     });
   }
 

@@ -19,8 +19,8 @@ export class UsersController {
   @UseGuards(RoleGuard)
   @Roles('admin', 'teacher')
   create(
-    @Body() createUserDto: CreateUserDto, 
-    @UserId() userId: Types.ObjectId 
+    @Body() createUserDto: CreateUserDto,
+    @UserId() userId: Types.ObjectId,
   ) {
     return this.usersService.create({ ...createUserDto, createdBy: userId });
   }
@@ -29,14 +29,18 @@ export class UsersController {
   @UseGuards(RoleGuard)
   @Roles('admin')
   findAll(
-    @Query('page') page = 1, 
-    @Query('limit') limit = 10, 
-    @Query('sort') sort = '-createdAt'
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('sort') sort = '-createdAt',
+    @Query('q') keyword?: string,
+    @Query('searchFields') searchFields?: string | string[],
   ) {
     return this.usersService.paginate({
       page: Number(page),
       limit: Number(limit),
       sort: convertSortStringToObject(sort),
+      keyword,
+      searchFields: searchFields ?? ['email'],
     });
   }
 
@@ -44,23 +48,25 @@ export class UsersController {
   @UseGuards(RoleGuard)
   @Roles('teacher')
   findAllManage(
-    @Query('page') page = 1, 
-    @Query('limit') limit = 10, 
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
     @Query('sort') sort = '-createdAt',
-    @UserId() userId: Types.ObjectId
+    @UserId() userId: Types.ObjectId,
+    @Query('q') keyword?: string,
+    @Query('searchFields') searchFields?: string | string[],
   ) {
     return this.usersService.paginate({
       page: Number(page),
       limit: Number(limit),
       sort: convertSortStringToObject(sort),
       filter: { createdBy: userId },
+      keyword,
+      searchFields: searchFields ?? ['email'],
     });
   }
 
   @Get(':id')
-  findOne(
-    @Param('id', ParseObjectIdPipe) id: Types.ObjectId
-  ) {
+  findOne(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
     return this.usersService.findById(id);
   }
 
@@ -69,16 +75,15 @@ export class UsersController {
   @Roles('admin', 'teacher')
   update(
     @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
-    @Body() updateUserDto: UpdateUserDto) {
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
   @UseGuards(RoleGuard)
   @Roles('admin', 'teacher')
-  remove(
-    @Param('id', ParseObjectIdPipe) id: Types.ObjectId
-  ) {
+  remove(@Param('id', ParseObjectIdPipe) id: Types.ObjectId) {
     return this.usersService.delete(id);
   }
 }
