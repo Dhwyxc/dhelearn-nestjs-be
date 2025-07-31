@@ -11,7 +11,7 @@ export class Answer {
   @Prop({ required: true })
   answer: MongooseSchema.Types.Mixed;
 
-  @Prop({ required: true })
+  @Prop()
   score?: number;
 }
 
@@ -29,7 +29,7 @@ export class ExamSubmission {
   answers: Answer[];
 
   @Prop()
-  totalScore: number;
+  totalScore?: number;
 
   @Prop()
   gradedBy?: Types.ObjectId;
@@ -40,3 +40,5 @@ export class ExamSubmission {
 
 export const ExamSubmissionSchema =
   SchemaFactory.createForClass(ExamSubmission);
+
+ExamSubmissionSchema.index({ studentId: 1, examId: 1 }, { unique: true });
