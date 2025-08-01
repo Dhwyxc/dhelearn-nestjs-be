@@ -12,7 +12,7 @@ export class Answer {
   answer: MongooseSchema.Types.Mixed;
 
   @Prop()
-  score?: number;
+  score?: number | null;
 }
 
 export const AnswerSchema = SchemaFactory.createForClass(Answer);
@@ -29,7 +29,7 @@ export class ExamSubmission {
   answers: Answer[];
 
   @Prop()
-  totalScore?: number;
+  totalScore?: number | null;
 
   @Prop()
   gradedBy?: Types.ObjectId;

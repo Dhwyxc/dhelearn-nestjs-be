@@ -1,8 +1,16 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateExamSubmissionDto } from './dto/create-exam-submission.dto';
 import { UpdateExamSubmissionDto } from './dto/update-exam-submission.dto';
-import { BaseService } from '@/core/base.service';
-import { Answer, ExamSubmission, ExamSubmissionDocument } from './schemas/exam-submissions.schema';
+import { BaseService, PaginationOptions } from '@/core/base.service';
+import {
+  Answer,
+  ExamSubmission,
+  ExamSubmissionDocument,
+} from './schemas/exam-submissions.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ExamsService } from '../exams/exams.service';
@@ -17,8 +25,12 @@ export class ExamSubmissionsService extends BaseService<ExamSubmission> {
     super(examSubmissionModel);
   }
 
-  async createAndGrade(CreateExamSubmissionDto: CreateExamSubmissionDto) {
-    const { examId, studentId, answers } = CreateExamSubmissionDto;
+  async paginate(options: PaginationOptions) {
+    return super.paginate(options);
+  }
+
+  async submitAndGrade(dto: CreateExamSubmissionDto) {
+    const { examId, studentId, answers } = dto;
 
     const existing = await this.examSubmissionModel.findOne({
       examId,
@@ -68,6 +80,78 @@ export class ExamSubmissionsService extends BaseService<ExamSubmission> {
       totalScore,
     });
 
+    return await submission.save();
+  }
+
+  async submitExam(dto: CreateExamSubmissionDto) {
+    const { examId, studentId, answers } = dto;
+
+    const existing = await this.examSubmissionModel.findOne({
+      examId,
+      studentId,
+    });
+    if (existing) {
+      throw new BadRequestException('Student has already submitted this exam');
+    }
+
+    const exam = await this.examsService.findById(examId);
+    if (!exam) {
+      throw new NotFoundException('Exam not found');
+    }
+
+    const plainAnswers: Answer[] = answers.map((ans) => ({
+      questionId: new Types.ObjectId(ans.questionId),
+      answer: ans.answer,
+      score: null, // Not graded yet
+    }));
+
+    const submission = new this.examSubmissionModel({
+      examId: new Types.ObjectId(examId),
+      studentId: new Types.ObjectId(studentId),
+      answers: plainAnswers,
+      totalScore: null, // Not graded yet
+    });
+
+    return await submission.save();
+  }
+
+  async gradeSubmission(id: Types.ObjectId, userId: Types.ObjectId) {
+    const submission = await this.examSubmissionModel.findById(id);
+    if (!submission) {
+      throw new NotFoundException('Submission not found');
+    }
+
+    const exam = await this.examsService.findById(submission.examId);
+    if (!exam) {
+      throw new NotFoundException('Exam not found');
+    }
+
+    const questionMap = new Map<string, any>();
+    for (const question of exam.questions) {
+      questionMap.set((question as any)._id.toString(), question);
+    }
+
+    let totalScore = 0;
+    const gradedAnswers = submission.answers.map((ans) => {
+      const question = questionMap.get(ans.questionId.toString());
+      if (!question) {
+        throw new BadRequestException(`Question not found: ${ans.questionId}`);
+      }
+
+      const isCorrect =
+        JSON.stringify(ans.answer) === JSON.stringify(question.correctAnswer);
+      const score = isCorrect ? question.points : 0;
+
+      totalScore += score;
+      return {
+        ...ans,
+        score,
+      };
+    });
+
+    submission.answers = gradedAnswers;
+    submission.totalScore = totalScore;
+    submission.gradedBy = userId;
     return await submission.save();
   }
 }
