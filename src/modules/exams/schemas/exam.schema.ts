@@ -8,8 +8,8 @@ export class Question {
   @Prop({ required: true })
   questionText: string;
 
-  @Prop({ required: true, enum: ['mcq', 'essay'] })
-  type: 'mcq' | 'essay';
+  @Prop({ required: true, enum: ['mcq', 'essay', 'short-answer'] })
+  type: 'mcq' | 'essay' | 'short-answer';
 
   @Prop()
   image?: string;

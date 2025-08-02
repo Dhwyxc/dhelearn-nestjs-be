@@ -21,9 +21,12 @@ export class QuestionDto {
   @IsNotEmpty()
   questionText: string;
 
-  @ApiProperty({ description: 'Type of question', enum: ['mcq', 'essay'] })
-  @IsEnum(['mcq', 'essay'])
-  type: 'mcq' | 'essay';
+  @ApiProperty({
+    description: 'Type of question',
+    enum: ['mcq', 'essay', 'short-answer'],
+  })
+  @IsEnum(['mcq', 'essay', 'short-answer'])
+  type: 'mcq' | 'essay' | 'short-answer';
 
   @ApiPropertyOptional({ description: 'Image URL for the question' })
   @IsOptional()

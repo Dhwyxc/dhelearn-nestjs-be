@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ExamSubmissionsService } from './exam-submissions.service';
 import { CreateExamSubmissionDto } from './dto/create-exam-submission.dto';
-import { UpdateExamSubmissionDto } from './dto/update-exam-submission.dto';
+import { UpdateAnswerDto, UpdateExamSubmissionDto } from './dto/update-exam-submission.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { ParseObjectIdPipe } from '@/core/parse-id.pipe';
 import { Types } from 'mongoose';
@@ -48,6 +48,20 @@ export class ExamSubmissionsController {
     const result = await this.examSubmissionsService.gradeSubmission(
       id,
       userId,
+    );
+    return { message: 'Graded successfully', data: result };
+  }
+
+  @Patch('exam-submit/:id/answer/:answerId')
+  async gradeManually(
+    @Param('id', ParseObjectIdPipe) id: Types.ObjectId,
+    @Param('answerId', ParseObjectIdPipe) answerId: Types.ObjectId,
+    @Body() updateScore: UpdateAnswerDto,
+  ) {
+    const result = await this.examSubmissionsService.gradeManually(
+      id,
+      answerId,
+      updateScore,
     );
     return { message: 'Graded successfully', data: result };
   }

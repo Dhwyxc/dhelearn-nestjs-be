@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { BaseService, PaginationOptions } from '@/core/base.service';
 import { Exam, ExamDocument, Question } from './schemas/exam.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -46,7 +50,10 @@ export class ExamsService extends BaseService<Exam> {
   // }
 
   // Update only basic exam information
-  async updateExamInfo(id: Types.ObjectId, updateExamInfoDto: UpdateExamInfoDto) {
+  async updateExamInfo(
+    id: Types.ObjectId,
+    updateExamInfoDto: UpdateExamInfoDto,
+  ) {
     const exam = await this.findOne(id);
     if (!exam) {
       throw new NotFoundException(`Exam with ID ${id} not found`);
@@ -67,27 +74,36 @@ export class ExamsService extends BaseService<Exam> {
     return this.examModel.findByIdAndUpdate(
       id,
       { $push: { questions: questionDto } },
-      { new: true }
+      { new: true },
     );
   }
 
   // Update a specific question by index
-  async updateQuestion(id: Types.ObjectId, questionIndex: number, questionDto: UpdateQuestionDto) {
+  async updateQuestion(
+    id: Types.ObjectId,
+    questionIndex: number,
+    questionDto: UpdateQuestionDto,
+  ) {
     const exam = await this.findOne(id);
     if (!exam) {
       throw new NotFoundException(`Exam with ID ${id} not found`);
     }
 
     if (questionIndex < 0 || questionIndex >= exam.questions.length) {
-      throw new BadRequestException(`Question index ${questionIndex} is out of range`);
+      throw new BadRequestException(
+        `Question index ${questionIndex} is out of range`,
+      );
     }
 
     if (questionDto.type || questionDto.questionText || questionDto.points) {
-      this.validateQuestion({ ...exam.questions[questionIndex], ...questionDto } as Question);
+      this.validateQuestion({
+        ...exam.questions[questionIndex],
+        ...questionDto,
+      } as Question);
     }
 
     const updateFields: any = {};
-    Object.keys(questionDto).forEach(key => {
+    Object.keys(questionDto).forEach((key) => {
       if (key !== 'questionId') {
         updateFields[`questions.${questionIndex}.${key}`] = questionDto[key];
       }
@@ -96,7 +112,7 @@ export class ExamsService extends BaseService<Exam> {
     return this.examModel.findByIdAndUpdate(
       id,
       { $set: updateFields },
-      { new: true }
+      { new: true },
     );
   }
 
@@ -108,18 +124,22 @@ export class ExamsService extends BaseService<Exam> {
     }
 
     if (questionIndex < 0 || questionIndex >= exam.questions.length) {
-      throw new BadRequestException(`Question index ${questionIndex} is out of range`);
+      throw new BadRequestException(
+        `Question index ${questionIndex} is out of range`,
+      );
     }
 
     if (exam.questions.length <= 1) {
-      throw new BadRequestException('Cannot remove the last question. Exam must have at least one question.');
+      throw new BadRequestException(
+        'Cannot remove the last question. Exam must have at least one question.',
+      );
     }
 
     exam.questions.splice(questionIndex, 1);
     return this.examModel.findByIdAndUpdate(
       id,
       { questions: exam.questions },
-      { new: true }
+      { new: true },
     );
   }
 
@@ -131,7 +151,9 @@ export class ExamsService extends BaseService<Exam> {
     }
 
     if (newOrder.length !== exam.questions.length) {
-      throw new BadRequestException('New order array must contain all question indices');
+      throw new BadRequestException(
+        'New order array must contain all question indices',
+      );
     }
 
     const uniqueIndices = new Set(newOrder);
@@ -142,15 +164,17 @@ export class ExamsService extends BaseService<Exam> {
     const maxIndex = Math.max(...newOrder);
     const minIndex = Math.min(...newOrder);
     if (maxIndex >= exam.questions.length || minIndex < 0) {
-      throw new BadRequestException('Invalid question index in new order array');
+      throw new BadRequestException(
+        'Invalid question index in new order array',
+      );
     }
 
-    const reorderedQuestions = newOrder.map(index => exam.questions[index]);
-    
+    const reorderedQuestions = newOrder.map((index) => exam.questions[index]);
+
     return this.examModel.findByIdAndUpdate(
       id,
       { questions: reorderedQuestions },
-      { new: true }
+      { new: true },
     );
   }
 
@@ -166,7 +190,7 @@ export class ExamsService extends BaseService<Exam> {
   //   // Remove questions (process in reverse order to maintain indices)
   //   if (operations.removeQuestionIndices && operations.removeQuestionIndices.length > 0) {
   //     const sortedIndices = operations.removeQuestionIndices.sort((a, b) => b - a);
-      
+
   //     // Validate indices
   //     for (const index of sortedIndices) {
   //       if (index < 0 || index >= questions.length) {
@@ -187,7 +211,7 @@ export class ExamsService extends BaseService<Exam> {
   //   if (operations.updateQuestions && operations.updateQuestions.length > 0) {
   //     for (const updateQuestion of operations.updateQuestions) {
   //       const questionIndex = parseInt(updateQuestion.questionId || '0');
-        
+
   //       if (questionIndex < 0 || questionIndex >= questions.length) {
   //         throw new BadRequestException(`Question index ${questionIndex} is out of range`);
   //       }
@@ -238,10 +262,14 @@ export class ExamsService extends BaseService<Exam> {
   private validateQuestion(question: Question | AddQuestionDto) {
     if (question.type === 'mcq') {
       if (!question.choices || question.choices.length < 2) {
-        throw new BadRequestException('MCQ questions must have at least 2 choices');
+        throw new BadRequestException(
+          'MCQ questions must have at least 2 choices',
+        );
       }
       if (!question.correctAnswer) {
-        throw new BadRequestException('MCQ questions must have a correct answer');
+        throw new BadRequestException(
+          'MCQ questions must have a correct answer',
+        );
       }
     }
 
@@ -259,8 +287,11 @@ export class ExamsService extends BaseService<Exam> {
 
     const totalQuestions = exam.questions.length;
     const totalPoints = exam.questions.reduce((sum, q) => sum + q.points, 0);
-    const mcqCount = exam.questions.filter(q => q.type === 'mcq').length;
-    const essayCount = exam.questions.filter(q => q.type === 'essay').length;
+    const mcqCount = exam.questions.filter((q) => q.type === 'mcq').length;
+    const essayCount = exam.questions.filter((q) => q.type === 'essay').length;
+    const shortAnswerCount = exam.questions.filter(
+      (q) => q.type === 'short-answer',
+    ).length;
     const avgPointsPerQuestion = totalPoints / totalQuestions;
 
     return {
@@ -268,6 +299,7 @@ export class ExamsService extends BaseService<Exam> {
       totalPoints,
       mcqCount,
       essayCount,
+      shortAnswerCount,
       avgPointsPerQuestion: Math.round(avgPointsPerQuestion * 100) / 100,
       duration: exam.duration,
       randomizeQuestions: exam.randomizeQuestions,
